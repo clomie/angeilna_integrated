@@ -30,8 +30,12 @@ function int(p1, p2, p3, p4) =
     (p4[0] - p3[0]) == 0 ? [p3[0], a * p3[0] + b] :
     [(d - b) / (a - c), (a * d - b * c)/(a - c)];
 
-function screw_offset(edge, prev, pAngle, next, nAngle, width) =
+function getDegree(p1, p2) = atan2(p2[1] - p1[1], p2[0] - p1[0]);
+
+function screw_offset(edge, prev, next, width) =
     let (
+        pAngle = getDegree(edge, prev) - 90,
+        nAngle = getDegree(next, edge) - 90,
         a1 = move(prev, pAngle, width),
         a2 = move(edge, pAngle, width),
         b1 = move(edge, nAngle, width),
@@ -125,38 +129,6 @@ module left_switch_holes() {
     ]);
 }
 
-module left_outline() {
-    polygon([
-        [ u(0.25), -u(1)],
-        [ u(0.25),  u(4)],
-        [-u(2.75, 21),  u(4)],
-        [-u(2.75, 21), -u(1)]
-    ]);
-
-    translate([-u(0, 30), u(3, 3)])
-    square($unit);
-    
-    rotate(-10)
-    polygon([
-        [-u(0.5), -u(1)],
-        [ u(4.0), -u(1)],
-        [ u(4.0),  u(4)],
-        [-u(0.5),  u(4)]
-    ]);
-
-    rotate(-10)
-    translate([u(3), 0])
-    rotate(-30)
-    polygon([
-        [u(0), -u(1)],
-        [u(0),  u(1)],
-        [u(2),  u(1)],
-        [u(2), -u(1)]
-    ]);
-}
-
-// -----------------------------------------------------------------------
-
 module right_switch_holes() {
     mirror([1,0,0]) {
         mirror([1,0,0])
@@ -194,78 +166,6 @@ module right_switch_holes() {
     }
 }
 
-module right_outline() {
-    mirror([1, 0, 0]) {
-        polygon([
-            [ u(0.25),  -u(1)],
-            [ u(0.25),   u(4)],
-            [-u(3, 30),  u(4)],
-            [-u(3, 30), -u(1)]
-        ]);
-
-        translate([-u(0, 30), u(3, 3)])
-        square($unit);
-        
-        rotate(-10)
-        polygon([
-            [-u(0.5), -u(1)],
-            [ u(4.0), -u(1)],
-            [ u(4.0),  u(4)],
-            [-u(0.5),  u(4)]
-        ]);
-
-        rotate(-10)
-        translate([u(3), 0])
-        rotate(-30)
-        polygon([
-            [u(0), -u(1)],
-            [u(0),  u(1)],
-            [u(2),  u(1)],
-            [u(2), -u(1)]
-        ]);
-    }
-}
-
-// -----------------------------------------------------------------------
-
-$distance = 6.75;
-
-module bridge() {
-    let(
-        top = [0, u(4)],
-        //top = rotate([u(4), u(4)], -10),
-        bottom = rotate(rotate([u(5), -u(1)], -30, [u(3), 0]), -10),
-        tx = top[0] - u($distance),
-        ty = top[1],
-        bx = bottom[0] - u($distance),
-        by = bottom[1]
-    )
-    polygon([
-        [tx, ty],
-        [bx, by],
-        [-bx, by],
-        [-tx, ty]
-    ]);
-}
-
-module pcb_outline() {
-    round(u(g = 4)) round(-u(g = 4))
-    union() {
-        translate([-u($distance), 0]) left_outline();
-        bridge();
-        translate([ u($distance), 0]) right_outline();
-    }
-}
-
-module pcb_with_anchor() {
-    difference() {
-        pcb_outline()
-        square(u(g=4));
-        translate([-u($distance), 0]) square(u(g=4));
-        translate([u($distance), 0]) square(u(g=4));
-    }
-}
-
 module switches() {
     translate([-u($distance), 0]) left_switch_holes();
     translate([ u($distance), 0]) right_switch_holes();
@@ -273,6 +173,7 @@ module switches() {
 
 // -----------------------------------------------------------------------
 
+$distance = 6.75;
 origin = [-u($distance), 0];
 
 c0 = add(rotate(rotate([u(5), -u(1)], -30, [u(3), 0]), -10), origin);
@@ -317,7 +218,19 @@ c22 = add(rotate([u(4), u(1)], -10), origin);
 c23a = add(rotate([u(4), u(0)], -10), origin);
 c23b = add(rotate(rotate([u(4), u(1)], -30, [u(3), 0]), -10), origin);
 c24 = add(rotate(rotate([u(5), u(1)], -30, [u(3), 0]), -10), origin);
+
+sl1 = add([-u(2.75, 21), -u(1)], origin);
+sl2 = add([-u(2.75, 21),  u(4, 3)], origin);
+sr2 = add([-u(3, 30), u(4,3)], origin);
+sr1 = add([-u(3, 30), -u(1)], origin);
+
+_x0 = abs(l7[0]) * 2 / 5;
+sc3 = [l7[0] + _x0,  u(4, 3)];
+sc4 = [l7[0] + _x0 * 2,  u(4, 3)];
+sc0 = [0, c0[1]];
 c23 = int(c22, c23a, c23b, c24);
+
+// -----------------------------------------------------------------------
 
 module switch_zone_edges() {
     let (
@@ -336,30 +249,16 @@ module switch_zone_edges() {
             c23, c24,
         ])
     )
-    round(1) round(-1) 
-    offset(delta = 0.5)
     union() {
         polygon(lefts);
         polygon(rights);
     }
 }
 
-// -----------------------------------------------------------------------
-
-sl1 = add([-u(2.75, 21), -u(1)], origin);
-sl2 = add([-u(2.75, 21),  u(4, 3)], origin);
-sr2 = add([-u(3, 30), u(4,3)], origin);
-sr1 = add([-u(3, 30), -u(1)], origin);
-
-sc3 =  add([u(1),  u(4, 3)], origin);
-sc4 =  add([u(5),  u(4, 3)], origin);
-sc0 = [0, c0[1]];
-
 function generateScrewPositions(offset) =
     let (
-        s0 = screw_offset(c0, sc0, -90, c1, -130, offset),
-        s1 = screw_offset(c1, c0, -130, c2, -100, offset),
-        s2 = screw_offset(c2, c1, -100, c3, -90, offset),
+        s0 = screw_offset(c0, sc0, c2, offset),
+        s2 = screw_offset(c2, c0, c3, offset),
         s3 = add(sl1, [-offset, -offset]),
         s4 = add(sl2, [-offset, offset]),
         s5 = add(sc3, [0, offset]),
@@ -369,30 +268,61 @@ function generateScrewPositions(offset) =
         s9 = add(flip(sr2), [offset, offset]),
         s10 = add(flip(sr1), [offset, -offset]),
         s11 = flip(s2),
-        s12 = flip(s1),
-        s13 = flip(s0),
-        s14 = move(sc0, -90, offset)
+        s13 = flip(s0)
     )
-    echo(s3)
-    [s0, s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14];
+    [s0, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s13];
 
 module plate_outline() {
     let (
-        left = [
-            c0,
-            int(c0, c1a, c1b, c2a),
-            int(c1b, c2a, c2b, c3),
-            sl1, sl2,
-        ],
-        right = [
-            sr2, sr1,
-            int(c1b, c2a, c2b, c3),
-            int(c0, c1a, c1b, c2a),
-            c0
-        ],
+        left  = [c0, c2, sl1, sl2],
+        right = [sr2, sr1, c2, c0],
         ps = concat(left, flip_all(right))
     )
     polygon(ps);
+}
+
+ss = generateScrewPositions(0);
+module gasket_tab(p, n) {
+    let (
+        width = 6,
+        angle = getDegree(n, p),
+        c = [(p[0] + n[0]) / 2, (p[1] + n[1]) / 2],
+        a1 = move(c, angle, 18),
+        b1 = move(c, angle - 180, 18),
+        a2 = move(a1, angle - 90, width),
+        b2 = move(b1, angle - 90, width)        
+    )
+    polygon([a1, a2, b2, b1]);
+}
+
+module top_plate_outline() {
+    round(u(g = 4)) round(-u(g = 4)) offset(delta = 1) 
+    union() {
+        plate_outline();
+        gasket_tab(ss[0], ss[1]);
+        gasket_tab(ss[1], ss[2]);
+        gasket_tab(ss[3], ss[4]);
+        gasket_tab(ss[4], ss[5]);
+        gasket_tab(ss[6], ss[7]);
+        gasket_tab(ss[7], ss[8]);
+        gasket_tab(ss[9], ss[10]);
+        gasket_tab(ss[10], ss[11]);
+        gasket_tab(ss[11], ss[0]);
+    }
+}
+
+module pcb_outline() {
+    round(u(g = 4)) round(-u(g = 4))
+    plate_outline();
+}
+
+module pcb_with_anchor() {
+    difference() {
+        pcb_outline()
+        square(u(g=4));
+        translate([-u($distance), 0]) square(u(g=4));
+        translate([u($distance), 0]) square(u(g=4));
+    }
 }
 
 // -----------------------------------------------------------------------
@@ -433,10 +363,12 @@ module cross_position() {
 
 // -----------------------------------------------------------------------
 
-$layer_thickness = [3, 3, 3, 3, 1.5, 3, 3, 3];
+//$layer_thickness = [3, 3, 3, 3, 1.5, 3, 3, 3];
+$layer_thickness = [3, 3, 3, 3, 3, 3, 3];
 $z_span = 0;
 module layer(index) {
-    color(index == 4 ? "Goldenrod" : "powderblue")
+//    color(index == 4 ? "Goldenrod" : "powderblue")
+    color("powderblue")
     translate([0, 0, sum($layer_thickness, index) + $z_span * index])
     linear_extrude($layer_thickness[index])
     children();
@@ -448,7 +380,6 @@ module offset_step(level) {
         br = $base_offset / 2,
         bo = $base_offset,
         step_offsets = [1.5, 1.1, 0.7],
-//        step_offsets = [0, 0, 0],
         bezel_width = bo + sum(step_offsets, level),
         round_convex = br + sum(step_offsets, level),
         round_concave = br + sum(step_offsets, len(step_offsets) - level)
@@ -471,28 +402,41 @@ module screw_hole(r) {
 module above_plate() {
     difference() {
         children();
+        round(1) round(-1) offset(delta = 0.5)
         switch_zone_edges();
-    }
-}
-
-module top_plate() {
-    difference() {
-        children();
-        switches();
     }
 }
 
 module under_plate() {
     difference() {
         children();
-        pcb_outline();
+        round(u(g = 4)) round(-u(g = 4)) offset(delta = 1.5)
+        plate_outline();
+    }
+}
+
+module gasket_plate() {
+    round(u(g = 4)) round(-u(g = 4))
+    difference() {
+        children();
+        round(u(g = 4)) round(-u(g = 4)) offset(delta = 1.5) plate_outline();
+        top_plate_outline();
+    }
+}
+
+module top_plate() {
+    translate([0, 0, sum($layer_thickness, 3) + $z_span * 3 + 1.5])
+    linear_extrude(1.5)
+    difference() {
+        top_plate_outline();
+        switches();
     }
 }
 
 module pcb() {
     translate([0, 0, 3 * 4 - 5 - 1.6])
     linear_extrude(1.6)
-    pcb_outline();    
+    pcb_outline();
 }
 
 module leg_back(hole) {
@@ -500,21 +444,21 @@ module leg_back(hole) {
     union() {
         difference() {
             hull() {
-                translate(screws[4]) circle(width);
-                translate(screws[6]) circle(width);
+                translate(screws[3]) circle(width);
+                translate(screws[5]) circle(width);
             }
+            translate(screws[3]) circle(hole);
             translate(screws[4]) circle(hole);
             translate(screws[5]) circle(hole);
-            translate(screws[6]) circle(hole);
         }
         difference() {
             hull() {
-                translate(screws[7]) circle(width);
-                translate(screws[9]) circle(width);
+                translate(screws[6]) circle(width);
+                translate(screws[8]) circle(width);
             }
+            translate(screws[6]) circle(hole);
             translate(screws[7]) circle(hole);
             translate(screws[8]) circle(hole);
-            translate(screws[9]) circle(hole);
         }
     }
 }
@@ -524,32 +468,33 @@ module leg_front(hole) {
     union() {
         difference() {
             hull() {
+                translate(screws[1]) circle(width);
                 translate(screws[2]) circle(width);
-                translate(screws[3]) circle(width);
             }
+            translate(screws[1]) circle(hole);
             translate(screws[2]) circle(hole);
-            translate(screws[3]) circle(hole);
         }
         difference() {
             hull() {
+                translate(screws[9]) circle(width);
                 translate(screws[10]) circle(width);
-                translate(screws[11]) circle(width);
             }
+            translate(screws[9]) circle(hole);
             translate(screws[10]) circle(hole);
-            translate(screws[11]) circle(hole);
         }
     }
 }
 
 module all() {
-    layer(7) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
-    layer(6) screw_hole(1.5) above_plate() offset_step(1) plate_outline();
-    layer(5) screw_hole(1.5) above_plate() offset_step(2) plate_outline();
-    layer(4) screw_hole(1.5) top_plate()   offset_step(2) plate_outline();
-    layer(3) screw_hole(1.5) under_plate() offset_step(3) plate_outline();
+    layer(6) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
+    layer(5) screw_hole(1.5) above_plate() offset_step(1) plate_outline();
+    layer(4) screw_hole(1.5) above_plate() offset_step(2) plate_outline();
+    layer(3) screw_hole(1.5) gasket_plate() offset_step(3) plate_outline();
     layer(2) screw_hole(1.5) under_plate() offset_step(2) plate_outline();
     layer(1) screw_hole(1.5) under_plate() offset_step(1) plate_outline();
     layer(0) screw_hole(1.0)               offset_step(0) plate_outline();
+    
+    color("goldenrod") top_plate();
 
     color("lightgray") pcb();
 
