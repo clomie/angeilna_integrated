@@ -284,7 +284,7 @@ module plate_outline() {
 ss = generateScrewPositions(0);
 module gasket_tab(p, n) {
     let (
-        width = 6,
+        width = 7,
         angle = getDegree(n, p),
         c = [(p[0] + n[0]) / 2, (p[1] + n[1]) / 2],
         a1 = move(c, angle, 18),
@@ -296,7 +296,6 @@ module gasket_tab(p, n) {
 }
 
 module top_plate_outline() {
-    round(u(g = 4)) round(-u(g = 4)) offset(delta = 1) 
     union() {
         plate_outline();
         gasket_tab(ss[0], ss[1]);
@@ -307,7 +306,8 @@ module top_plate_outline() {
         gasket_tab(ss[7], ss[8]);
         gasket_tab(ss[9], ss[10]);
         gasket_tab(ss[10], ss[11]);
-        gasket_tab(ss[11], ss[0]);
+        gasket_tab(ss[11], sc0);
+        gasket_tab(sc0, ss[0]);
     }
 }
 
@@ -327,49 +327,10 @@ module pcb_with_anchor() {
 
 // -----------------------------------------------------------------------
 
-module cross_position() {
-    translate([-25, -100]) {
-        color("cyan") difference() {
-            union() {
-                translate([ 0, 9]) square([50 + 0, 3.0-0.1]);
-                translate([-1, 6]) square([50 + 2, 3.0-0.1]);
-                translate([-2, 3]) square([50 + 4, 3.0-0.1]);
-//                translate([-3, 0]) square([50 + 6, 3.0-0.1]);
-//                translate([-2,-3]) square([50 + 4, 3.0-0.1]);
-//                translate([-1,-6]) square([50 + 2, 3.0-0.1]);
-//                translate([ 0,-9]) square([50 + 0, 3.0-0.1]);
-                translate([-3,-1.5]) square([50 + 6, 3.0-0.1]);
-                translate([-2,-4.5]) square([50 + 4, 3.0-0.1]);
-                translate([-1,-7.5]) square([50 + 2, 3.0-0.1]);
-                translate([ 0,-10.5]) square([50 + 0, 3.0-0.1]);
-            }
-//            translate([ 1, 0])   square([48, 3.0]);
-//            translate([ 5,-6])   square([40, 9.0]);
-            translate([ 5,-7.5])   square([40, 9.0]);
-        }
-
-//        color("gold") translate([ 1, 1.5]) square([48, 1.5-0.1]);
-        color("gold") translate([ -2, 1.5]) square([50+4, 1.5-0.1]);
-
-//        translate([ 1, 0]) square([4, 1.6]);
-//        translate([45, 0]) square([4, 1.6]);
-
-        color("lime") translate([ 5, 3 - 5 - 1.6])     square([40, 1.6]);
-        color("gray") translate([ 5, 3 - 5 - 1.6 - 5.5])     circle(0.3);
-        color("gray") translate([10, 3 - 5 - 1.6 - 2]) square([10, 2]);
-        color("gray") translate([30, 3 - 5 - 1.6 - 2]) square([10, 2]);
-    }
-}
-
-// -----------------------------------------------------------------------
-
-//$layer_thickness = [3, 3, 3, 3, 1.5, 3, 3, 3];
 $layer_thickness = [3, 3, 3, 3, 3, 3, 3];
-$z_span = 0;
 module layer(index) {
-//    color(index == 4 ? "Goldenrod" : "powderblue")
     color("powderblue")
-    translate([0, 0, sum($layer_thickness, index) + $z_span * index])
+    translate([0, 0, sum($layer_thickness, index)])
     linear_extrude($layer_thickness[index])
     children();
 }
@@ -402,16 +363,14 @@ module screw_hole(r) {
 module above_plate() {
     difference() {
         children();
-        round(1) round(-1) offset(delta = 0.5)
-        switch_zone_edges();
+        round(1) round(-1) offset(delta = 0.5) switch_zone_edges();
     }
 }
 
 module under_plate() {
     difference() {
         children();
-        round(u(g = 4)) round(-u(g = 4)) offset(delta = 1.5)
-        plate_outline();
+        round(u(g = 4)) round(-u(g = 4)) offset(delta = 2.5) plate_outline();
     }
 }
 
@@ -419,24 +378,30 @@ module gasket_plate() {
     round(u(g = 4)) round(-u(g = 4))
     difference() {
         children();
-        round(u(g = 4)) round(-u(g = 4)) offset(delta = 1.5) plate_outline();
-        top_plate_outline();
+        round(u(g = 4)) round(-u(g = 4)) offset(delta = 2.5) plate_outline();
+        round(u(g = 4)) round(-u(g = 4)) offset(delta = 1.5) top_plate_outline();
     }
 }
 
 module top_plate() {
-    translate([0, 0, sum($layer_thickness, 3) + $z_span * 3 + 1.5])
-    linear_extrude(1.5)
     difference() {
-        top_plate_outline();
+        round(u(g = 4)) round(-u(g = 4)) offset(delta = 1.5) top_plate_outline();
         switches();
     }
 }
 
-module pcb() {
+module arrange_top_plate() {
+    color("goldenrod")
+    translate([0, 0, sum($layer_thickness, 3) + 1.5])
+    linear_extrude(1.5)
+    children();
+}
+
+module arrange_pcb() {
+    color("lightgray") 
     translate([0, 0, 3 * 4 - 5 - 1.6])
     linear_extrude(1.6)
-    pcb_outline();
+    children();
 }
 
 module leg_back(hole) {
@@ -486,32 +451,33 @@ module leg_front(hole) {
 }
 
 module all() {
-    layer(6) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
-    layer(5) screw_hole(1.5) above_plate() offset_step(1) plate_outline();
-    layer(4) screw_hole(1.5) above_plate() offset_step(2) plate_outline();
-    layer(3) screw_hole(1.5) gasket_plate() offset_step(3) plate_outline();
-    layer(2) screw_hole(1.5) under_plate() offset_step(2) plate_outline();
-    layer(1) screw_hole(1.5) under_plate() offset_step(1) plate_outline();
-    layer(0) screw_hole(1.0)               offset_step(0) plate_outline();
+    translate([0, 0, 120])
+    union() {
+        layer(6) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
+        layer(5) screw_hole(1.5) above_plate() offset_step(1) plate_outline();
+        layer(4) screw_hole(1.5) above_plate() offset_step(2) plate_outline();
+    }
     
-    color("goldenrod") top_plate();
+    translate([0, 0, 45])
+    arrange_top_plate() top_plate();
 
-    color("lightgray") pcb();
+    translate([0, 0, 30])
+    layer(3) screw_hole(1.5) gasket_plate() offset_step(3) plate_outline();
 
-    translate([0, 0, -3]) linear_extrude(3) leg_back(1.5);
-    translate([0, 0, -6]) linear_extrude(3) leg_back(1.5);
-    translate([0, 0, -9]) linear_extrude(3) leg_back(1.5);
-    translate([0, 0, -11]) linear_extrude(2) leg_back(1.5);
-    translate([0, 0, -13]) linear_extrude(2) leg_back(1);
+    translate([0, 0, 10])
+    arrange_pcb() pcb_outline();
 
-    translate([0, 0, -3]) linear_extrude(3) leg_front(1);
+    union() {
+        layer(2) screw_hole(1.5) under_plate() offset_step(2) plate_outline();
+        layer(1) screw_hole(1.5) under_plate() offset_step(1) plate_outline();
+        layer(0) screw_hole(1.0)               offset_step(0) plate_outline();
+        translate([0, 0, -3]) linear_extrude(3) leg_back(1.5);
+        translate([0, 0, -6]) linear_extrude(3) leg_back(1.5);
+        translate([0, 0, -9]) linear_extrude(3) leg_back(1.5);
+        translate([0, 0,-11]) linear_extrude(2) leg_back(1.5);
+        translate([0, 0,-13]) linear_extrude(2) leg_back(1);
+        translate([0, 0, -3]) linear_extrude(3) leg_front(1);
+    }
 }
 
 all();
-//cross_position();
-
-y0 = screws[0][1];
-y1 = screws[3][1] - y0;
-y2 = screws[4][1] - y0;
-echo(0, y1, y2);
-echo(0, 3, y2 / y1 * 3);
