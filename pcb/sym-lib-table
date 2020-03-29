@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name angelina_integrated)(type Legacy)(uri ${KIPRJMOD}/angelina_integrated.lib)(options "")(descr ""))
+)

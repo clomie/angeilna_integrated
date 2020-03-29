@@ -1,0 +1,9 @@
+gerber
+output
+fp-info-cache
+*.zip
+*.kicad_pcb-bak
+*.sch-bak
+*.bak
+*-cache.lib
+
