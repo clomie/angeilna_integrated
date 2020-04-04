@@ -1,6 +1,6 @@
-(module MJ-4PP-9_1side (layer F.Cu) (tedit 5E801877)
-  (fp_text reference J1 (at 0.85 4.95 180) (layer B.Fab)
-    (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
+(module MJ-4PP-9_1side (layer F.Cu) (tedit 5E80434C)
+  (fp_text reference J1 (at 0.85 4.95 180) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
   )
   (fp_text value MJ-4PP-9 (at 0 14 180) (layer B.Fab) hide
     (effects (font (size 1 1) (thickness 0.15)))

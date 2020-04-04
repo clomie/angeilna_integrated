@@ -25,28 +25,6 @@ F 3 "~" H 1000 1075 50  0001 C CNN
 	1    0    0    -1  
 $EndComp
 $Comp
-L power:GND #PWR0101
-U 1 1 5E66191F
-P 1000 1075
-F 0 "#PWR0101" H 1000 825 50  0001 C CNN
-F 1 "GND" H 1005 899 50  0000 C CNN
-F 2 "" H 1000 1075 50  0001 C CNN
-F 3 "" H 1000 1075 50  0001 C CNN
-	1    1000 1075
-	1    0    0    -1  
-$EndComp
-$Comp
-L power:GND #PWR0102
-U 1 1 5E662EC3
-P 1500 1075
-F 0 "#PWR0102" H 1500 825 50  0001 C CNN
-F 1 "GND" H 1505 899 50  0000 C CNN
-F 2 "" H 1500 1075 50  0001 C CNN
-F 3 "" H 1500 1075 50  0001 C CNN
-	1    1500 1075
-	1    0    0    -1  
-$EndComp
-$Comp
 L power:VCC #PWR0103
 U 1 1 5E663452
 P 1500 1075
@@ -169,9 +147,9 @@ $EndComp
 Text GLabel 3700 1200 2    50   Input ~ 0
 data
 Text GLabel 3700 1500 2    50   Input ~ 0
-sda
+SDA
 Text GLabel 3700 1600 2    50   Input ~ 0
-scl
+SCL
 Text GLabel 3700 1700 2    50   Input ~ 0
 row0
 Text GLabel 3700 1800 2    50   Input ~ 0
@@ -215,17 +193,6 @@ Wire Wire Line
 Text GLabel 5675 1425 2    50   Input ~ 0
 data
 $Comp
-L Device:R R2
-U 1 1 5E668CA7
-P 6350 1400
-F 0 "R2" V 6234 1400 50  0000 C CNN
-F 1 "R" V 6233 1400 50  0001 C CNN
-F 2 "angelina_integerated:R" V 6280 1400 50  0001 C CNN
-F 3 "~" H 6350 1400 50  0001 C CNN
-	1    6350 1400
-	-1   0    0    1   
-$EndComp
-$Comp
 L Device:R R1
 U 1 1 5E669724
 P 6125 1400
@@ -234,12 +201,12 @@ F 1 "R" V 6242 1400 50  0001 C CNN
 F 2 "angelina_integerated:R" V 6055 1400 50  0001 C CNN
 F 3 "~" H 6125 1400 50  0001 C CNN
 	1    6125 1400
-	1    0    0    -1  
+	-1   0    0    1   
 $EndComp
-Text GLabel 6350 1550 3    50   Input ~ 0
-sda
 Text GLabel 6125 1550 3    50   Input ~ 0
-scl
+SDA
+Text GLabel 6350 1550 3    50   Input ~ 0
+SCL
 $Comp
 L power:VCC #PWR0111
 U 1 1 5E668256
@@ -640,23 +607,23 @@ Connection ~ 8500 8250
 Wire Wire Line
 	8500 7750 8500 8250
 Text GLabel 8500 7750 1    50   Input ~ 0
-col7
+col0
 Text GLabel 7500 7750 1    50   Input ~ 0
-col6
-Text GLabel 6500 7750 1    50   Input ~ 0
-col5
-Text GLabel 5500 7725 1    50   Input ~ 0
-col4
-Text GLabel 4500 7750 1    50   Input ~ 0
-col3
-Text GLabel 3500 7750 1    50   Input ~ 0
-col2
-Text GLabel 2500 7750 1    50   Input ~ 0
 col1
+Text GLabel 6500 7750 1    50   Input ~ 0
+col2
+Text GLabel 5500 7725 1    50   Input ~ 0
+col3
+Text GLabel 4500 7750 1    50   Input ~ 0
+col4
+Text GLabel 3500 7750 1    50   Input ~ 0
+col5
+Text GLabel 2500 7750 1    50   Input ~ 0
+col6
 Wire Wire Line
 	1500 7750 1500 8250
 Text GLabel 1500 7750 1    50   Input ~ 0
-col0
+col7
 $Comp
 L Device:D D56
 U 1 1 5E8A91AA
@@ -2237,4 +2204,37 @@ Wire Wire Line
 	1250 6050 3100 6050
 NoConn ~ 3700 2200
 NoConn ~ 3700 1100
+$Comp
+L power:GND #PWR0101
+U 1 1 5E835182
+P 1000 1075
+F 0 "#PWR0101" H 1000 825 50  0001 C CNN
+F 1 "GND" H 1005 899 50  0000 C CNN
+F 2 "" H 1000 1075 50  0001 C CNN
+F 3 "" H 1000 1075 50  0001 C CNN
+	1    1000 1075
+	1    0    0    -1  
+$EndComp
+$Comp
+L power:PWR_FLAG #FLG0102
+U 1 1 5E836051
+P 1500 1075
+F 0 "#FLG0102" H 1500 1150 50  0001 C CNN
+F 1 "PWR_FLAG" H 1500 1251 50  0000 C CNN
+F 2 "" H 1500 1075 50  0001 C CNN
+F 3 "~" H 1500 1075 50  0001 C CNN
+	1    1500 1075
+	-1   0    0    1   
+$EndComp
+$Comp
+L Device:R R2
+U 1 1 5E668CA7
+P 6350 1400
+F 0 "R2" V 6234 1400 50  0000 C CNN
+F 1 "R" V 6233 1400 50  0001 C CNN
+F 2 "angelina_integerated:R" V 6280 1400 50  0001 C CNN
+F 3 "~" H 6350 1400 50  0001 C CNN
+	1    6350 1400
+	-1   0    0    1   
+$EndComp
 $EndSCHEMATC
