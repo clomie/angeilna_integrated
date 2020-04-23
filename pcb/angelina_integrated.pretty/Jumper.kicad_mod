@@ -1,10 +1,13 @@
-(module Jumper (layer F.Cu) (tedit 5E8056E2)
+(module Jumper (layer F.Cu) (tedit 5EA0544A)
   (attr smd)
   (fp_text reference REF** (at 1.190624 0) (layer B.SilkS)
     (effects (font (size 0.8128 0.8128) (thickness 0.1524)) (justify right mirror))
   )
   (fp_text value Jumper (at 0 1.524) (layer F.Fab) hide
     (effects (font (size 0.8128 0.8128) (thickness 0.15)))
+  )
+  (fp_text user Serial (at -1.190624 0) (layer B.SilkS)
+    (effects (font (size 0.8128 0.8128) (thickness 0.15)) (justify left mirror))
   )
   (fp_line (start -1.143 0.889) (end 1.143 0.889) (layer B.SilkS) (width 0.15))
   (fp_line (start 1.143 0.889) (end 1.143 -0.889) (layer B.SilkS) (width 0.15))
@@ -14,8 +17,6 @@
     (clearance 0.1905))
   (pad 2 smd rect (at 0.50038 0) (size 0.635 1.143) (layers B.Cu B.Paste B.Mask)
     (clearance 0.1905))
-  (pad "" smd rect (at 0 0 270) (size 0.381 0.381) (layers B.Cu B.Paste B.Mask)
-    (clearance 0.00254))
   (model smd\resistors\R0603.wrl
     (offset (xyz 0 0 0.02539999961853028))
     (scale (xyz 0.5 0.5 0.5))

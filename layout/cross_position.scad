@@ -1,5 +1,13 @@
+acr = 3.0;
+top = 1.5;
+pad = 1.5;
+pcb = 1.2;
+skt = 1.85;
+
 module cross_position() {
-    color("powderblue") difference() {
+    color("powderblue")
+    translate([0, -3])
+    difference() {
         union() {
             translate([ 0, 9]) square([50 + 0, 3.0-0.1]);
             translate([-1, 6]) square([50 + 2, 3.0-0.1]);
@@ -13,14 +21,16 @@ module cross_position() {
         translate([ 5,-6])   square([40, 9.0]);
     }
 
-    color("goldenrod") translate([ 1, 1.5]) square([48, 1.5-0.1]);
+    color("goldenrod") translate([ 1, -1.5]) square([48, 1.5-0.1]);
 
-    translate([ 1, 0]) square([4, 1.6]);
-    translate([45, 0]) square([4, 1.6]);
+    translate([ 1, -3]) square([4, 1.5-0.1]);
+    translate([45, -3]) square([4, 1.5-0.1]);
 
-    color("lime") translate([ 5, 3 - 5 - 1.6])     square([40, 1.6]);
-    color("lightgray") translate([10, 3 - 5 - 1.6 - 2]) square([10, 2]);
-    color("lightgray") translate([30, 3 - 5 - 1.6 - 2]) square([10, 2]);
+    color("lime") translate([ 5, -(5 + pcb)])    square([40, pcb]);
+    color("lightgray") translate([10, -(5 + pcb + skt)]) square([10, skt]);
+    color("lightgray") translate([30, -(5 + pcb + skt)]) square([10, skt]);
 }
 
 cross_position();
+
+echo(9 - (5 + pcb + skt));

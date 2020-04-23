@@ -318,10 +318,22 @@ module pcb_outline() {
 
 module pcb_with_anchor() {
     difference() {
-        pcb_outline()
+        pcb_outline();
+
         square(u(g=4));
         translate([-u($distance), 0]) square(u(g=4));
         translate([u($distance), 0]) square(u(g=4));
+        
+        // Cutout for USB-C Connector
+        round(u(g = 2)) round(-u(g = 2))
+        union() {
+            translate([-10, u(4, 3)]) square([20, 8]);
+            translate([-5, u(4, 3) - 8]) square([10, 8]);
+        }
+        
+        // Cutout for Reset switch and Qwiic Connector
+        round(u(g = 2)) round(-u(g = 2))
+        translate([-5, u(4, 3) - 33.05]) square([10, 8]);
     }
 }
 
@@ -400,7 +412,7 @@ module arrange_top_plate() {
 module arrange_pcb() {
     color("lightgray") 
     translate([0, 0, 3 * 4 - 5 - 1.6])
-    linear_extrude(1.6)
+    linear_extrude(1.2)
     children();
 }
 
@@ -451,20 +463,20 @@ module leg_front(hole) {
 }
 
 module all() {
-    translate([0, 0, 120])
+//    translate([0, 0, 120])
     union() {
         layer(6) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
         layer(5) screw_hole(1.5) above_plate() offset_step(1) plate_outline();
         layer(4) screw_hole(1.5) above_plate() offset_step(2) plate_outline();
     }
     
-    translate([0, 0, 45])
+//    translate([0, 0, 45])
     arrange_top_plate() top_plate();
 
-    translate([0, 0, 30])
+//    translate([0, 0, 30])
     layer(3) screw_hole(1.5) gasket_plate() offset_step(3) plate_outline();
 
-    translate([0, 0, 10])
+//    translate([0, 0, 10])
     arrange_pcb() pcb_outline();
 
     union() {
@@ -481,4 +493,6 @@ module all() {
 }
 
 all();
-//!pcb_with_anchor();
+
+echo(u(g=4));
+!pcb_with_anchor();
