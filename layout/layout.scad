@@ -1,3 +1,5 @@
+use <parts.scad>
+
 $fn = 128;
 
 function rotate(pos, r, axis = [0, 0]) =
@@ -312,18 +314,10 @@ module top_plate_outline() {
 }
 
 module pcb_outline() {
-    round(u(g = 4)) round(-u(g = 4))
-    plate_outline();
-}
-
-module pcb_with_anchor() {
     difference() {
-        pcb_outline();
+        round(u(g = 4)) round(-u(g = 4))
+        plate_outline();
 
-        square(u(g=4));
-        translate([-u($distance), 0]) square(u(g=4));
-        translate([u($distance), 0]) square(u(g=4));
-        
         // Cutout for USB-C Connector
         round(u(g = 2)) round(-u(g = 2))
         union() {
@@ -337,23 +331,37 @@ module pcb_with_anchor() {
     }
 }
 
+module pcb_with_anchor() {
+    difference() {
+        pcb_outline();
+
+        square(u(g=4));
+        translate([-u($distance), 0]) square(u(g=4));
+        translate([u($distance), 0]) square(u(g=4));
+    }
+}
+
 // -----------------------------------------------------------------------
 
 $layer_thickness = [3, 3, 3, 3, 3, 3, 3];
 module layer(index) {
-    color("powderblue")
+    color("#8db4b988")
     translate([0, 0, sum($layer_thickness, index)])
     linear_extrude($layer_thickness[index])
     children();
 }
 
 $base_offset = 12;
+$step_offsets = [1.5, 1.1, 0.7];
+function calc_bezel_width(level) =
+    $base_offset + sum($step_offsets, level);
+
 module offset_step(level) {
     let(
         br = $base_offset / 2,
         bo = $base_offset,
         step_offsets = [1.5, 1.1, 0.7],
-        bezel_width = bo + sum(step_offsets, level),
+        bezel_width = calc_bezel_width(level),
         round_convex = br + sum(step_offsets, level),
         round_concave = br + sum(step_offsets, len(step_offsets) - level)
     )
@@ -363,11 +371,15 @@ module offset_step(level) {
 }
 
 screws = generateScrewPositions($base_offset / 2);
-module screw_hole(r) {
+module screw_hole(r, bottom = false) {
     difference() {
         children();
-        for (p = screws) {
-            translate(p) circle(r);
+        for (i = [0 : len(screws) - 1]) {
+            if (bottom && (i <= 2 || i >= 9)) {
+                translate(screws[i]) circle(1.0);
+            } else {
+                translate(screws[i]) circle(r);
+            }
         }
     }
 }
@@ -403,17 +415,76 @@ module top_plate() {
 }
 
 module arrange_top_plate() {
+    let (t = 1.5)
     color("goldenrod")
-    translate([0, 0, sum($layer_thickness, 3) + 1.5])
-    linear_extrude(1.5)
+    translate([0, 0, sum($layer_thickness, 4) - t])
+    linear_extrude(t)
     children();
 }
 
 module arrange_pcb() {
-    color("lightgray") 
-    translate([0, 0, 3 * 4 - 5 - 1.6])
-    linear_extrude(1.2)
-    children();
+    let(
+        mount_height = 5,
+        t = 1.2,
+        z_pos = sum($layer_thickness, 4) - mount_height - t
+    )
+    translate([0, 0, z_pos])
+    union() {
+        translate([0, 0, -(2.5 + t)])
+        translate([0, u(4, 3), 0])
+        elite_c();
+
+        translate([14.88, 0, 0])
+        translate([0, u(4, 3), 0])
+        trrs_jack();
+
+        translate([-16.07, -1.79, 0])
+        translate([0, u(4, 3), 0])
+        tvbp06();
+
+        *translate([-208.3592, -148.828, 1.3])
+        linear_extrude(0.25)
+        import("angelina_integrated-brd.svg");
+
+        color("green")
+        linear_extrude(t)
+        children();
+    }
+}
+
+module cutout_shape() {
+    let(
+        ew = 4 + 18.6,
+        eh = 3 + 33.1,
+        tw = 6 + 6,
+        th = 2 + 12.1,
+        b = calc_bezel_width(0)
+    )
+    translate([0, u(4, 3), 0])
+    round(u(g = 4)) round(-u(g = 4))
+    union() {
+        translate([0, -eh/2])
+        square([ew, eh], center = true);
+        translate([0, -th])
+        square([14.88 + tw/2, th]);
+        translate([-ew/2, 0])
+        square([ew/2 + 14.88 + tw/2, b]);
+        translate([0, b + 10/2])
+        square([50, 10], center = true);
+        translate([-16.07, -1.79, 0])
+        circle(2);
+    }
+}
+
+module conn_cutout(level) {
+    let(
+        offset = calc_bezel_width(level) - calc_bezel_width(0)
+    )
+    difference() {
+        children();
+        translate([0, offset, 0])
+        cutout_shape();
+    }
 }
 
 module leg_back(hole) {
@@ -463,36 +534,43 @@ module leg_front(hole) {
 }
 
 module all() {
-//    translate([0, 0, 120])
-    union() {
-        layer(6) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
-        layer(5) screw_hole(1.5) above_plate() offset_step(1) plate_outline();
-        layer(4) screw_hole(1.5) above_plate() offset_step(2) plate_outline();
-    }
     
-//    translate([0, 0, 45])
+    translate([0, 0, 45])
     arrange_top_plate() top_plate();
 
-//    translate([0, 0, 30])
-    layer(3) screw_hole(1.5) gasket_plate() offset_step(3) plate_outline();
-
-//    translate([0, 0, 10])
+    translate([0, 0, 10])
     arrange_pcb() pcb_outline();
 
+    translate([0, 0, 120])
     union() {
-        layer(2) screw_hole(1.5) under_plate() offset_step(2) plate_outline();
-        layer(1) screw_hole(1.5) under_plate() offset_step(1) plate_outline();
-        layer(0) screw_hole(1.0)               offset_step(0) plate_outline();
-        translate([0, 0, -3]) linear_extrude(3) leg_back(1.5);
-        translate([0, 0, -6]) linear_extrude(3) leg_back(1.5);
-        translate([0, 0, -9]) linear_extrude(3) leg_back(1.5);
-        translate([0, 0,-11]) linear_extrude(2) leg_back(1.5);
-        translate([0, 0,-13]) linear_extrude(2) leg_back(1);
+        layer(6) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
+        layer(5) screw_hole(1.6) above_plate() offset_step(1) plate_outline();
+        layer(4) screw_hole(1.6) above_plate() offset_step(2) plate_outline();
+    }
+
+    translate([0, 0, 30])
+    layer(3) screw_hole(1.6) gasket_plate() offset_step(3) plate_outline();
+
+    union() {
+        layer(2) conn_cutout(2)  screw_hole(1.6) under_plate() offset_step(2) plate_outline();
+        layer(1) conn_cutout(1)  screw_hole(1.6) under_plate() offset_step(1) plate_outline();
+        layer(0) conn_cutout(0)  screw_hole(1.6, bottom=true)  offset_step(0) plate_outline();
+        translate([0, 0, -3]) linear_extrude(3) leg_back(1.6);
+        translate([0, 0, -6]) linear_extrude(3) leg_back(1.6);
+        translate([0, 0, -9]) linear_extrude(3) leg_back(1.6);
+        translate([0, 0,-11]) linear_extrude(2) leg_back(1);
+        translate([0, 0,-13]) linear_extrude(2) leg_back(1); // 13mm
         translate([0, 0, -3]) linear_extrude(3) leg_front(1);
     }
 }
-
 all();
 
-echo(u(g=4));
-!pcb_with_anchor();
+*pcb_with_anchor();
+
+*top_plate();
+
+d1 = ss[0][1];
+d2 = ss[2][1] - d1;
+d3 = ss[3][1] - d1;
+echo(0, d2, d3);
+echo(3 / d2 * d3);
