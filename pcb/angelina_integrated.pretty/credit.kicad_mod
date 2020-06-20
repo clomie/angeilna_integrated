@@ -1,0 +1,11 @@
+(module credit (layer F.Cu) (tedit 5EEB7928)
+  (fp_text reference REF** (at 0 1.016) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text value credit (at 0 -1.016) (layer F.Fab) hide
+    (effects (font (size 1 1) (thickness 0.15)))
+  )
+  (fp_text user "Angelina Integrated rev.1 (2020.06) Designed by clomie" (at 0 0) (layer B.Mask)
+    (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
+  )
+)
