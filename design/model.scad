@@ -360,17 +360,16 @@ module offset_step(level) {
     let(
         br = $base_offset / 2,
         bo = $base_offset,
-        step_offsets = [1.5, 1.1, 0.7],
         bezel_width = calc_bezel_width(level),
-        round_convex = br + sum(step_offsets, level),
-        round_concave = br + sum(step_offsets, len(step_offsets) - level)
+        round_convex = br + sum($step_offsets, level),
+        round_concave = br + sum($step_offsets, len($step_offsets) - level)
     )
     round(round_convex) round(-round_concave)
     offset(delta = bezel_width)
     children();
 }
 
-screws = generateScrewPositions($base_offset / 2);
+screws = generateScrewPositions(calc_bezel_width(2) / 2);
 module screw_hole(r, bottom = false) {
     difference() {
         children();
@@ -471,8 +470,6 @@ module cutout_shape() {
         square([ew/2 + 14.88 + tw/2, b]);
         translate([0, b + 10/2])
         square([50, 10], center = true);
-        translate([-16.07, -1.79, 0])
-        circle(2);
     }
 }
 
@@ -484,16 +481,24 @@ module conn_cutout(level) {
         children();
         translate([0, offset, 0])
         cutout_shape();
+        if (level == 0) {
+            translate([0, u(4, 3), 0])
+            translate([-16.07, -1.79, 0])
+            circle(2);
+        }
     }
 }
 
 module leg_back(hole) {
-    let(width = $base_offset / 2)
+    let (
+        width = $base_offset / 2,
+        pos = generateScrewPositions(calc_bezel_width(0) / 2)
+    )
     union() {
         difference() {
             hull() {
-                translate(screws[3]) circle(width);
-                translate(screws[5]) circle(width);
+                translate(pos[3]) circle(width);
+                translate(pos[5]) circle(width);
             }
             translate(screws[3]) circle(hole);
             translate(screws[4]) circle(hole);
@@ -501,8 +506,8 @@ module leg_back(hole) {
         }
         difference() {
             hull() {
-                translate(screws[6]) circle(width);
-                translate(screws[8]) circle(width);
+                translate(pos[6]) circle(width);
+                translate(pos[8]) circle(width);
             }
             translate(screws[6]) circle(hole);
             translate(screws[7]) circle(hole);
@@ -512,20 +517,23 @@ module leg_back(hole) {
 }
 
 module leg_front(hole) {
-    let(width = $base_offset / 2)
+    let (
+        width = $base_offset / 2,
+        pos = generateScrewPositions(calc_bezel_width(0) / 2)
+    )
     union() {
         difference() {
             hull() {
-                translate(screws[1]) circle(width);
-                translate(screws[2]) circle(width);
+                translate(pos[1]) circle(width);
+                translate(pos[2]) circle(width);
             }
             translate(screws[1]) circle(hole);
             translate(screws[2]) circle(hole);
         }
         difference() {
             hull() {
-                translate(screws[9]) circle(width);
-                translate(screws[10]) circle(width);
+                translate(pos[9]) circle(width);
+                translate(pos[10]) circle(width);
             }
             translate(screws[9]) circle(hole);
             translate(screws[10]) circle(hole);
@@ -533,44 +541,77 @@ module leg_front(hole) {
     }
 }
 
+module layer6() { screw_hole(1.0) above_plate()  offset_step(0) plate_outline(); }
+module layer5() { screw_hole(1.6) above_plate()  offset_step(1) plate_outline(); }
+module layer4() { screw_hole(1.6) above_plate()  offset_step(2) plate_outline(); }
+module layer3() { screw_hole(1.6) gasket_plate() offset_step(3) plate_outline(); }
+module layer2() { conn_cutout(2) screw_hole(1.6) under_plate() offset_step(2) plate_outline(); }
+module layer1() { conn_cutout(1) screw_hole(1.6) under_plate() offset_step(1) plate_outline(); }   
+module layer0() { conn_cutout(0) screw_hole(1.6, bottom=true)  offset_step(0) plate_outline(); }
+
 module all() {
     
-    translate([0, 0, 45])
+//    translate([0, 0, 45])
     arrange_top_plate() top_plate();
 
-    translate([0, 0, 10])
+//    translate([0, 0, 10])
     arrange_pcb() pcb_outline();
 
-    translate([0, 0, 120])
+//    translate([0, 0, 120])
     union() {
-        layer(6) screw_hole(1.0) above_plate() offset_step(0) plate_outline();
-        layer(5) screw_hole(1.6) above_plate() offset_step(1) plate_outline();
-        layer(4) screw_hole(1.6) above_plate() offset_step(2) plate_outline();
+        layer(6) layer6();
+        layer(5) layer5();
+        layer(4) layer4();
     }
 
-    translate([0, 0, 30])
-    layer(3) screw_hole(1.6) gasket_plate() offset_step(3) plate_outline();
+//    translate([0, 0, 30])
+    layer(3) layer3();
 
     union() {
-        layer(2) conn_cutout(2)  screw_hole(1.6) under_plate() offset_step(2) plate_outline();
-        layer(1) conn_cutout(1)  screw_hole(1.6) under_plate() offset_step(1) plate_outline();
-        layer(0) conn_cutout(0)  screw_hole(1.6, bottom=true)  offset_step(0) plate_outline();
+        layer(2) layer2();
+        layer(1) layer1();
+        layer(0) layer0();
         translate([0, 0, -3]) linear_extrude(3) leg_back(1.6);
         translate([0, 0, -6]) linear_extrude(3) leg_back(1.6);
         translate([0, 0, -9]) linear_extrude(3) leg_back(1.6);
-        translate([0, 0,-11]) linear_extrude(2) leg_back(1);
-        translate([0, 0,-13]) linear_extrude(2) leg_back(1); // 13mm
+        translate([0, 0,-12]) linear_extrude(3) leg_back(1);
+        translate([0, 0,-15]) linear_extrude(3) leg_back(1); // 15mm
         translate([0, 0, -3]) linear_extrude(3) leg_front(1);
     }
 }
+
+module tilt() {
+    let (
+        ps = generateScrewPositions($base_offset / 2),
+        d1 = ps[0][1],
+        d2 = ps[2][1] - d1,
+        d3 = ps[3][1] - d1,
+        theta = atan(15 / d3)
+    ) {
+        echo(0, d2, d3);
+        echo(15 / d3 * d2);
+        echo(theta);
+
+        rotate(theta, [1, 0, 0])
+        translate([0, -ss[0][1] + $base_offset, 0])
+        children();
+    }
+}
+
+tilt()
 all();
 
 *pcb_with_anchor();
-
 *top_plate();
 
-d1 = ss[0][1];
-d2 = ss[2][1] - d1;
-d3 = ss[3][1] - d1;
-echo(0, d2, d3);
-echo(3 / d2 * d3);
+*layer0();
+*layer1();
+*layer2();
+*layer3();
+*layer4();
+*layer5();
+*layer6();
+
+*leg_back(1.6);
+*leg_back(1);
+*leg_front(1);
