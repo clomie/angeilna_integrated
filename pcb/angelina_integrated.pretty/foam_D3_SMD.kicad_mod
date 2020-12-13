@@ -1,0 +1,18 @@
+(module foam_D3_SMD (layer F.Cu) (tedit 5FD5AD5A)
+  (autoplace_cost90 10)
+  (fp_text reference REF** (at -1.524 0 90) (layer B.SilkS) hide
+    (effects (font (size 1 1) (thickness 0.15)) (justify mirror))
+  )
+  (fp_text value foam_D3_SMD (at 0 0 90) (layer F.Fab) hide
+    (effects (font (size 0.5 0.5) (thickness 0.125)))
+  )
+  (fp_line (start 1.016 -2.794) (end 1.016 2.794) (layer Edge.Cuts) (width 0.05))
+  (fp_line (start 1.016 2.794) (end -1.016 2.794) (layer Edge.Cuts) (width 0.05))
+  (fp_line (start -1.016 2.794) (end -1.016 -2.794) (layer Edge.Cuts) (width 0.05))
+  (fp_line (start -1.016 -2.794) (end 1.016 -2.794) (layer Edge.Cuts) (width 0.05))
+  (model Diodes_SMD.3dshapes/SMB_Handsoldering.wrl
+    (at (xyz 0 0 0))
+    (scale (xyz 0.22 0.15 0.15))
+    (rotate (xyz 0 0 180))
+  )
+)
